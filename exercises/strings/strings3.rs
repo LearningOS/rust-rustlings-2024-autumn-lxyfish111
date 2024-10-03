@@ -7,17 +7,26 @@
 
 fn trim_me(input: &str) -> String {
     // TODO: Remove whitespace from both ends of a string!
-    ???
+    String::from(input.trim())
 }
 
 fn compose_me(input: &str) -> String {
     // TODO: Add " world!" to the string! There's multiple ways to do this!
-    ???
+    format!("{} world!", input)
 }
 
 fn replace_me(input: &str) -> String {
     // TODO: Replace "cars" in the string with "balloons"!
-    ???
+    let pos = input.find("cars");
+    if pos != None {
+        if (pos + 4) == input.len() {
+            format!("{} {}", input[0..pos - 1], "balloons")
+        } else {
+            format!("{} {}", input[0..pos - 1], "balloons", input[(pos + 4)..(input.len - 1]))
+        }
+    } else {
+        String::from("")
+    }
 }
 
 #[cfg(test)]
