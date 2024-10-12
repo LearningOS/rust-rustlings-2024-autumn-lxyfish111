@@ -69,14 +69,89 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
-	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+
+    pub fn get_end_ref(&mut self) -> Option<&mut T>{
+        match self.end {
+            None => None,
+            Some(next_ptr) => Some(unsafe { &mut(*next_ptr.as_ptr()).val })
         }
+    }
+
+	pub fn merge(mut list_a:LinkedList<T>, mut list_b:LinkedList<T>) -> Self
+    where T: PartialOrd + Copy,
+	{
+        let la = list_a.length;
+        let lb = list_b.length;
+        let mut ca: i32 = 0;
+        let mut cb = 0;
+
+        let mut list_ret = Self::new();
+
+        for i in 0.. la + lb {
+            let mut va;
+            if let Some(val_a) = list_a.get(ca as i32) {
+                va = val_a.clone();
+            } else {
+                continue;
+            };
+
+            let mut vb;
+            if let Some(val_b) = list_b.get(cb as i32) {
+                vb = val_b.clone();
+            } else {
+                continue;
+            };
+
+            if let Some(v_ret) = list_ret.get_end_ref() {
+                if *v_ret > va && *v_ret < vb {
+                    let tmp = *v_ret;
+                    unsafe {
+                        *v_ret = va;
+                    }
+                    list_ret.add(tmp);
+                    ca += 1;
+                    list_ret.add(vb);
+                    cb += 1;
+                } else if *v_ret > va && *v_ret > vb {
+                    let tmp = *v_ret;
+                    if va < vb {
+                        unsafe {
+                            *v_ret = va;
+                        }
+                        list_ret.add(tmp);
+                        ca += 1;
+                        list_ret.add(vb);
+                        cb += 1;
+                    } else {
+                        unsafe {
+                            *v_ret = vb;
+                        }
+                        list_ret.add(tmp);
+                        ca += 1;
+                        list_ret.add(va);
+                        cb += 1;
+                    }
+
+                }
+
+                continue;
+            } 
+            
+            if va < vb {
+                list_ret.add(va);
+                ca += 1;
+                list_ret.add(vb);
+                cb += 1;
+            } else {
+                list_ret.add(vb);
+                cb += 1;
+                list_ret.add(va);
+                ca += 1;
+            }
+            
+        }
+
+        list_ret
 	}
 }
 
