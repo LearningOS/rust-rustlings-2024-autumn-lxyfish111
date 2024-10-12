@@ -2,7 +2,7 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
+
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
@@ -78,76 +78,116 @@ impl<T> LinkedList<T> {
     }
 
 	pub fn merge(mut list_a:LinkedList<T>, mut list_b:LinkedList<T>) -> Self
-    where T: PartialOrd + Copy,
+    where T: PartialOrd + Copy + std::fmt::Display,
 	{
         let la = list_a.length;
         let lb = list_b.length;
-        let mut ca: i32 = 0;
+        let mut ca: u32 = 0;
         let mut cb = 0;
 
         let mut list_ret = Self::new();
 
         for i in 0.. la + lb {
-            let mut va;
-            if let Some(val_a) = list_a.get(ca as i32) {
-                va = val_a.clone();
-            } else {
-                continue;
-            };
-
-            let mut vb;
-            if let Some(val_b) = list_b.get(cb as i32) {
-                vb = val_b.clone();
-            } else {
-                continue;
-            };
-
-            if let Some(v_ret) = list_ret.get_end_ref() {
-                if *v_ret > va && *v_ret < vb {
-                    let tmp = *v_ret;
-                    unsafe {
-                        *v_ret = va;
-                    }
-                    list_ret.add(tmp);
-                    ca += 1;
-                    list_ret.add(vb);
-                    cb += 1;
-                } else if *v_ret > va && *v_ret > vb {
-                    let tmp = *v_ret;
-                    if va < vb {
-                        unsafe {
-                            *v_ret = va;
-                        }
-                        list_ret.add(tmp);
-                        ca += 1;
-                        list_ret.add(vb);
-                        cb += 1;
-                    } else {
-                        unsafe {
-                            *v_ret = vb;
-                        }
-                        list_ret.add(tmp);
-                        ca += 1;
-                        list_ret.add(va);
-                        cb += 1;
-                    }
-
+            println!("ca:{}, cb: {}", ca, cb);
+            if ca >= la && cb < lb {
+                println!("1");
+                if let Some(vb) = list_b.get(cb as i32) {
+                    list_ret.add(*vb);
                 }
-
+                cb += 1;
                 continue;
-            } 
-            
-            if va < vb {
-                list_ret.add(va);
+            } else if ca < la && cb >= lb {
+                println!("2");
+                if let Some(va) = list_a.get(ca as i32) {
+                    list_ret.add(*va);
+                }
                 ca += 1;
-                list_ret.add(vb);
-                cb += 1;
+                continue;
+            } else if ca >= la && cb >= lb {
+                println!("3");
+                continue;
             } else {
-                list_ret.add(vb);
-                cb += 1;
-                list_ret.add(va);
-                ca += 1;
+                println!("4");
+                let mut va = list_a.get(ca as i32);
+                let mut vb = list_b.get(cb as i32);
+
+                match (va, vb) {
+                    (Some(va), Some(vb)) => {
+                        println!("5");
+                        if let Some(v_ret) = list_ret.get_end_ref() {
+                            if *v_ret > *va && *v_ret < *vb {//*v_ret > *va && *v_ret < *vb
+                                let tmp = *v_ret;
+                                unsafe {
+                                    *v_ret = *va;
+                                }
+                                list_ret.add(tmp);
+                                ca += 1;
+                                list_ret.add(*vb);
+                                cb += 1;
+                            } else if *v_ret > *va && *v_ret > *vb {
+                                let tmp = *v_ret;
+                                if va < vb {
+                                    unsafe {
+                                        *v_ret = *va;
+                                    }
+                                    list_ret.add(tmp);
+                                    ca += 1;
+                                    list_ret.add(*vb);
+                                    cb += 1;
+                                } else {
+                                    unsafe {
+                                        *v_ret = *vb;
+                                    }
+                                    list_ret.add(tmp);
+                                    ca += 1;
+                                    list_ret.add(*va);
+                                    cb += 1;
+                                }
+                            } else if *v_ret < *va && *v_ret > *vb {//*v_ret < *va && *v_ret > *vb
+                                let tmp = *v_ret;
+                                unsafe {
+                                    *v_ret = *vb;
+                                }
+            
+                                list_ret.add(tmp);
+                                ca += 1;
+                                list_ret.add(*va);
+                                cb += 1;
+                            } else {
+                                if va < vb {//va < vb
+                                    list_ret.add(*va);
+                                    ca += 1;
+                                    list_ret.add(*vb);
+                                    cb += 1;
+                                } else {
+                                    list_ret.add(*vb);
+                                    cb += 1;
+                                    list_ret.add(*va);
+                                    ca += 1;
+                                }
+                            }
+                        } else {
+                            if va < vb {//va < vb
+                                list_ret.add(*va);
+                                ca += 1;
+                                list_ret.add(*vb);
+                                cb += 1;
+                            } else {
+                                list_ret.add(*vb);
+                                cb += 1;
+                                list_ret.add(*va);
+                                ca += 1;
+                            }
+                        }
+                        
+                    },
+                    _ => { 
+                        println!("6");
+                        continue; 
+                    },
+                }
             }
+
             
         }
 
