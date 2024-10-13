@@ -3,7 +3,6 @@
 	This question requires you to use a stack to achieve a bracket match
 */
 
-// I AM NOT DONE
 #[derive(Debug)]
 struct Stack<T> {
 	size: usize,
@@ -31,8 +30,8 @@ impl<T> Stack<T> {
 		self.size += 1;
 	}
 	fn pop(&mut self) -> Option<T> {
-		// TODO
-		None
+		self.size -= 1;
+		self.data.pop()
 	}
 	fn peek(&self) -> Option<&T> {
 		if 0 == self.size {
@@ -101,8 +100,49 @@ impl<'a, T> Iterator for IterMut<'a, T> {
 
 fn bracket_match(bracket: &str) -> bool
 {
-	//TODO
-	true
+	let mut stack = Stack::new();
+	let mut bracket_map: std::collections::HashMap<char, char> =
+			std::collections::HashMap::new();
+	
+	// 初始化括号映射关系
+	bracket_map.insert('(', ')');
+	bracket_map.insert('{', '}');
+	bracket_map.insert('[', ']');
+
+	for ch in bracket.chars() {
+			match ch {
+					'(' | '[' | '{' => {
+							// 如果是左括号，压入栈中
+							stack.push(ch);
+					},
+					')' | ']' | '}' => {
+							// 如果是右括号，检查栈顶是否有对应的左括号
+							if stack.is_empty() {
+									return false; // 栈为空，但遇到了右括号，返回 false
+							}
+							match stack.pop() {
+									Some(left) => {
+											if bracket_map[&left] != ch {
+												println!("1");
+													return false; // 不匹配，返回 false
+											}
+									},
+									None => {
+											// 栈为空，但遇到了右括号，返回 false
+											println!("2");
+											return false;
+									},
+							}
+					},
+					_ => {
+							// 忽略非括号字符
+							continue;
+					},
+			}
+	}
+
+	// 如果栈为空，则所有括号正确匹配
+	stack.is_empty()
 }
 
 #[cfg(test)]

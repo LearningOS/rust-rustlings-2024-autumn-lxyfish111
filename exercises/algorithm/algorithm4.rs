@@ -3,7 +3,6 @@
 	This problem requires you to implement a basic interface for a binary tree
 */
 
-//I AM NOT DONE
 use std::cmp::Ordering;
 use std::fmt::Debug;
 
@@ -50,13 +49,35 @@ where
 
     // Insert a value into the BST
     fn insert(&mut self, value: T) {
-        //TODO
+        TreeNode::insert(&mut self.root, value);
     }
 
     // Search for a value in the BST
     fn search(&self, value: T) -> bool {
-        //TODO
-        true
+        match self.root {
+            Some(ref node) => self.search_node(node, &value),
+            None => false,
+        }
+    }
+
+    fn search_node(&self, node: &Box<TreeNode<T>>, value: &T) -> bool {
+        match node.value.cmp(value) {
+            Ordering::Less => {
+                if let Some(ref right) = node.right {
+                    self.search_node(right, value)
+                } else {
+                    false
+                }
+            }
+            Ordering::Greater => {
+                if let Some(ref left) = node.left {
+                    self.search_node(left, value)
+                } else {
+                    false
+                }
+            }
+            Ordering::Equal => true,
+        }
     }
 }
 
@@ -65,8 +86,31 @@ where
     T: Ord,
 {
     // Insert a node into the tree
-    fn insert(&mut self, value: T) {
-        //TODO
+    fn insert(mut root: &mut Option<Box<TreeNode<T>>>, value: T) {
+        match root {
+            Some(node) => {
+                match node.value.cmp(&value) {
+                    Ordering::Less => {
+                        if node.right.is_none() {
+                            node.right = Some(Box::new(TreeNode::new(value)));
+                        } else {
+                            TreeNode::insert(&mut node.right, value);
+                        }
+                    }
+                    Ordering::Greater => {
+                        if node.left.is_none() {
+                            node.left = Some(Box::new(TreeNode::new(value)));
+                        } else {
+                            TreeNode::insert(&mut node.left, value);
+                        }
+                    }
+                    Ordering::Equal => {} // 或者处理重复值的情况
+                }
+            }
+            None => {
+                *root = Some(Box::new(TreeNode::new(value)));
+            }
+        }
     }
 }
 
