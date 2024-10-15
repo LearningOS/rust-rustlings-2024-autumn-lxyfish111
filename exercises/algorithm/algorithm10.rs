@@ -2,7 +2,6 @@
 	graph
 	This problem requires you to implement a basic graph functio
 */
-// I AM NOT DONE
 
 use std::collections::{HashMap, HashSet};
 use std::fmt;
@@ -16,6 +15,16 @@ impl fmt::Display for NodeNotInGraph {
 pub struct UndirectedGraph {
     adjacency_table: HashMap<String, Vec<(String, i32)>>,
 }
+
+impl UndirectedGraph {
+    fn add_to_map<'a>(map: &'a mut HashMap<String, Vec<(String, i32)>>, from: &'a str, to: &'a str, weight: i32) {
+        // 使用 entry 方法来访问或插入键的值
+        let entry = map.entry(String::from(from)).or_insert_with(Vec::new);
+        entry.push((String::from(to), weight));
+    }
+
+}
+
 impl Graph for UndirectedGraph {
     fn new() -> UndirectedGraph {
         UndirectedGraph {
@@ -28,8 +37,15 @@ impl Graph for UndirectedGraph {
     fn adjacency_table(&self) -> &HashMap<String, Vec<(String, i32)>> {
         &self.adjacency_table
     }
+
     fn add_edge(&mut self, edge: (&str, &str, i32)) {
-        //TODO
+        let (from, to, weight) = edge;
+        //let mut table = &self.adjacency_table;
+        UndirectedGraph::add_to_map(&mut self.adjacency_table, from, to, weight);// table.entry(String::from(from)).or_insert_with(Vec::new);
+        UndirectedGraph::add_to_map(&mut self.adjacency_table, to, from, weight);//table.entry(String::from(to)).or_insert_with(Vec::new);
+        //from_node.push((String::from(to), weight));
+        //to_node.push((String::from(from), weight));
+        println!("adjacency_table:{:?}", self.adjacency_table);
     }
 }
 pub trait Graph {
@@ -37,11 +53,26 @@ pub trait Graph {
     fn adjacency_table_mutable(&mut self) -> &mut HashMap<String, Vec<(String, i32)>>;
     fn adjacency_table(&self) -> &HashMap<String, Vec<(String, i32)>>;
     fn add_node(&mut self, node: &str) -> bool {
-        //TODO
-		true
+        if self.contains(node) {
+            false
+        } else {
+            self.adjacency_table_mutable().insert(String::from(node), Vec::new());
+            true
+        }
     }
     fn add_edge(&mut self, edge: (&str, &str, i32)) {
-        //TODO
+        let (from, to, weight) = edge;
+        // 确保两个节点都存在于图中
+        self.add_node(from);
+        self.add_node(to);
+        // 获取或创建节点的邻接列表
+        let mut table = self.adjacency_table_mutable().clone();
+        let from_node = table.entry(String::from(from)).or_insert_with(Vec::new);
+        let mut table1 = self.adjacency_table_mutable().clone();
+        let to_node = table1.entry(String::from(to)).or_insert_with(Vec::new);
+        // 添加边
+        from_node.push((String::from(to), weight));
+        to_node.push((String::from(from), weight));
     }
     fn contains(&self, node: &str) -> bool {
         self.adjacency_table().get(node).is_some()
@@ -78,6 +109,7 @@ mod test_undirected_graph {
             (&String::from("c"), &String::from("b"), 10),
         ];
         for edge in expected_edges.iter() {
+            println!("edge:{:?}", edge);
             assert_eq!(graph.edges().contains(edge), true);
         }
     }

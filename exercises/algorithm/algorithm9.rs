@@ -2,7 +2,7 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
+
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -18,7 +18,7 @@ where
 
 impl<T> Heap<T>
 where
-    T: Default,
+    T: Default + std::fmt::Debug,
 {
     pub fn new(comparator: fn(&T, &T) -> bool) -> Self {
         Self {
@@ -37,7 +37,10 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        self.items.push(value);
+        self.count += 1;
+        self.sift_up(self.count);
+        // println!("items:{:?}", self.items);
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -57,14 +60,44 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+        let left = self.left_child_idx(idx);
+        let right = self.right_child_idx(idx);
+        if right <= self.count && ((self.comparator)(&self.items[right], &self.items[left])) {
+            right
+        } else {
+            left
+        }
     }
+
+    fn sift_up(&mut self, mut idx: usize) {
+        while idx > 1 && ((self.comparator)(&self.items[idx], &self.items[self.parent_idx(idx)])) {
+            let idx1 = self.parent_idx(idx);
+            self.items.swap(idx, idx1);
+            idx = self.parent_idx(idx);
+        }
+    }
+
+    fn sift_down(&mut self, mut idx: usize) {
+        // println!("arr item1:{:?}", self.items);
+        while self.children_present(idx) {
+            let smaller_child = self.smallest_child_idx(idx);
+            // println!("smaller:{}", smaller_child.clone());
+            if (self.comparator)(&self.items[smaller_child], &self.items[idx]) {
+                // println!("1");
+                self.items.swap(idx, smaller_child);
+                idx = smaller_child;
+                // println!("arr item2:{:?}", self.items);
+            } else {
+                // println!("2");
+                break;
+            }
+        }
+    } 
 }
 
 impl<T> Heap<T>
 where
-    T: Default + Ord,
+    T: Default + Ord + std::fmt::Debug,
 {
     /// Create a new MinHeap
     pub fn new_min() -> Self {
@@ -79,13 +112,22 @@ where
 
 impl<T> Iterator for Heap<T>
 where
-    T: Default,
+    T: Default + Clone + std::fmt::Debug + std::fmt::Display,
 {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        // println!("item next:{:?}", self.items);
+        if self.is_empty() {
+            None
+        } else {
+            let item = self.items[1].clone();
+            self.items[1] = self.items.remove(self.count);
+            self.count -= 1;
+            self.sift_down(1);
+            // println!("item value:{}", item.clone());
+            Some(item)
+        }
     }
 }
 
@@ -95,7 +137,7 @@ impl MinHeap {
     #[allow(clippy::new_ret_no_self)]
     pub fn new<T>() -> Heap<T>
     where
-        T: Default + Ord,
+        T: Default + Ord + std::fmt::Debug,
     {
         Heap::new(|a, b| a < b)
     }
@@ -107,7 +149,7 @@ impl MaxHeap {
     #[allow(clippy::new_ret_no_self)]
     pub fn new<T>() -> Heap<T>
     where
-        T: Default + Ord,
+        T: Default + Ord + std::fmt::Debug,
     {
         Heap::new(|a, b| a > b)
     }
